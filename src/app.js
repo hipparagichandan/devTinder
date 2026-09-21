@@ -2,29 +2,29 @@ const express = require('express')
 
 const app = express()
 
-const {authAdmin, userAuth} = require("./middlewares/auth")
-
-app.use("/admin", authAdmin )
-
-app.get("/admin/getAllData" , (req, res, next) => {
-    console.log("Admin is being authenticated")
-    res.send("All Data Sent")
+app.get("/getUserData" , (req,res) => {
+    throw new Error("dfdfd")
+    res.send("User Data Sent")
 })
 
-app.delete("/admin/deleteUser" , (req,res) => {
-    res.send("User Deleted")
-})
+// //it is best to write and handle errors inside the try catch block
+// app.get("/userData" , (req,res,next) => {
+//     try{
+//         //logic
+//         throw new Error("random error ")
 
-app.post("/user/login", (req,res) => {
-    res.send("User Logged in Succesfully")
-})
-app.get("/user/data", userAuth, (req,res) => {
-    console.log('Fetching user data')
-    res.send("UserData sent successfully")
-})
-// app.get('{*splat}', (req, res)=>{
-//     res.send("Please check your routes")
+//     } catch (err){
+//         //log your error
+//         res.status(500).send("Error Caught here, something went wrong")
+//     }
 // })
+
+//This will match all routes and if any error is not handled it will be caught and handled here
+app.use("/", (err,req,res,next) => {
+    if(err){
+        res.status(500).send("Somethig went wrong")
+    }
+})
 
 app.listen(7777, ()=>{
     console.log("Server is listening on port 7777... ")

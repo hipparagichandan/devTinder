@@ -2,16 +2,31 @@ const express = require('express')
 
 const app = express()
 
-app.use("/test", (req, res)=>{
-    res.send("Hello Hello Hello Testing 123..")
+//Order of the routes matter, the first matching wildcard for that route will be resolved
+app.get("/user" , (req, res)=> {
+    res.send({"firstname" : "Chandan", "secondname" : "Hipparagi"})
 })
 
-app.use("/about", (req, res)=>{
-    res.send("This is all ABOUT Heloo")
+app.post("/user", (req,res) => {
+    // handle post logic
+    res.send("User Post succesful")
 })
 
-app.use("/",(req, res)=>{
-    res.send("Hello from server ")
+app.put("/user", (_,res)=> {
+    res.send("Updated User sucesfully")
+})
+
+app.patch("/user", (req, res)=> {
+    res.send("Patch request successful")
+})
+
+app.delete("/user", (req,res)=>{
+    res.send("Deleted Successfully")
+})
+
+//this will match all the routes that starts with /test eg: /test/123 will be resolved here
+app.use("/test",(req, res)=>{
+    res.send("Hello from test server ")
 })
 
 app.listen(7777, ()=>{

@@ -97,7 +97,7 @@ app.get("/user" , async (req,res) => {
  app.patch("/user", async (req, res) => {
     try{
         const userID = req.body._id
-        const user = await User.findByIdAndUpdate(userID, req.body)
+        const user = await User.findByIdAndUpdate(userID, req.body, {runValidators : true})
         if(!user){
              res.status(404).send("User Not found")
         }else {

@@ -30,7 +30,7 @@ app.get("/userById" , async (req,res) => {
         }
 
     }catch(err){
-        res.status(404).send("User Not found. Error" + err.message)
+        res.status(400).send("Something went wrong")
     }
 })
 
@@ -47,7 +47,7 @@ app.get("/user" , async (req,res) => {
         }
 
     }catch(err){
-        res.status(404).send("User Not found. Error" + err.message)
+        res.status(400).send("Something went wrong")
     }
  })
 
@@ -62,7 +62,49 @@ app.get("/user" , async (req,res) => {
         }
     }
     catch(err) {
-        res.status(404).send("User Not found. Error" + err.message)
+        res.status(400).send("Something went wrong")
+
+    }
+ })
+
+ app.delete("/userByEmailId", async (req,res) => {
+    try{
+        const result = await User.deleteOne({emailId : req.body.emailId})
+        if(result.deletedCount === 1){
+            res.send("Deleted Succssfully")
+        } else {
+            res.status(404).send("User Not found")
+        }
+    }catch(err) {
+        res.status(400).send("Something went wrong")
+    }
+ })
+
+ app.delete("/user" , async (req,res) => {
+    try{
+        const userID = req.body._id
+        const user = await User.findByIdAndDelete(userID)
+        if(!user){
+             res.status(404).send("User Not found")
+        }else {
+            res.send("Deleted Successfully " + JSON.stringify(user))
+        }
+    }catch(err) {
+        res.status(400).send("Something went wrong")
+    }
+ } )
+
+ app.patch("/user", async (req, res) => {
+    try{
+        const userID = req.body._id
+        const user = await User.findByIdAndUpdate(userID, req.body)
+        if(!user){
+             res.status(404).send("User Not found")
+        }else {
+            res.send("Updated Successfully " + JSON.stringify(user))
+        }
+    }catch(err) {
+        res.status(400).send("Something went wrong")
     }
  })
 

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose")
+const validator = require("validator")
 
 const {Schema} = require("mongoose")
 
@@ -19,10 +20,21 @@ const userSchema = Schema({
         lowercase : true,
         required : true,
         trim :true,
-        unique : true
+        unique : true,
+        validate(value) {
+            if(!validator.isEmail(value)){
+                throw new Error("EmailId is not valid")
+            }
+        }
     },
     password : {
         type : String,
+        validate(value) {
+            if(!validator.isStrongPassword(value)){
+                throw new Error("Failed : Enter a Strong password")
+            }
+        }
+        
     },
     age : {
         type : Number,
@@ -46,7 +58,12 @@ const userSchema = Schema({
     },
     imageUrl : {
         type : String,
-        default : "https://i.pinimg.com/474x/1d/ec/e2/1dece2c8357bdd7cee3b15036344faf5.jpg"
+        default : "https://i.pinimg.com/474x/1d/ec/e2/1dece2c8357bdd7cee3b15036344faf5.jpg",
+        validate(value) {
+            if(!validator.isURL(value)){
+                throw new Error("imageUrl is not valid")
+            }
+        }
     }
 },{
     timestamps : true

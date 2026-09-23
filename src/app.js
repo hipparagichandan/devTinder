@@ -7,9 +7,11 @@ const app = express()
 app.use(express.json())
 
 app.post("/signup" , async (req,res) => {
+    const data = req.body
     const newUser = new User(req.body)
 
     try{
+        if(data?.skills?.length > 10) throw new Error("You can have maximum of 10 skills")
         await newUser.save();
         res.send("User Added Successfully")
     } catch (err) {
@@ -94,9 +96,15 @@ app.get("/user" , async (req,res) => {
     }
  } )
 
- app.patch("/user", async (req, res) => {
+ app.patch("/user/:userID", async (req, res) => {
+    const userID = req.params?.userID;
+    const data = req.body;
+
     try{
-        const userID = req.body._id
+        const ALLOWED_UPDATES = ["password", "skills", "gender", "imageUrl","about"]
+        const isUpdateAllowed = Object.keys(req.body).every((k) => ALLOWED_UPDATES.includes(k))
+        if(!isUpdateAllowed) throw new Error("Update Not Allowed");
+        if(data?.skills?.length > 10) throw new Error("You can have maximum of 10 skills")
         const user = await User.findByIdAndUpdate(userID, req.body, {runValidators : true})
         if(!user){
              res.status(404).send("User Not found")
@@ -104,7 +112,7 @@ app.get("/user" , async (req,res) => {
             res.send("Updated Successfully " + JSON.stringify(user))
         }
     }catch(err) {
-        res.status(400).send("Something went wrong")
+        res.status(400).send("Update Failed : Error : " + err.message)
     }
  })
 

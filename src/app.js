@@ -1,21 +1,33 @@
 const express = require('express')
 const connectDB = require("./config/database")
 const User = require('./models/user')
+const {validateSignUpData} = require("./utils/validation")
+const bcrypt = require("bcrypt")
+
 
 const app = express()
 //express.json() converts json to Javascript object. VERY IMPORTANT
 app.use(express.json())
 
 app.post("/signup" , async (req,res) => {
-    const data = req.body
-    const newUser = new User(req.body)
-
+    const {firstName, lastName,emailId, password,} = req.body
     try{
-        if(data?.skills?.length > 10) throw new Error("You can have maximum of 10 skills")
+        //validate all fields
+        validateSignUpData(req)
+
+        //encrypt the passowrd
+        const passwordHash = await bcrypt.hash(password, 10)
+        const newUser = new User({
+            firstName,
+            lastName,
+            emailId,
+            password : passwordHash
+        })
+        
         await newUser.save();
         res.send("User Added Successfully")
     } catch (err) {
-        res.status(500).send("User was not added. Error : " + err.message)
+        res.status(400).send("User was not added. Error : " + err.message)
     }
 })
 

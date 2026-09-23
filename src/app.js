@@ -3,11 +3,16 @@ const connectDB = require("./config/database")
 const User = require('./models/user')
 const {validateSignUpData} = require("./utils/validation")
 const bcrypt = require("bcrypt")
+const cookieParser = require("cookie-parser")
+const jwt = require("jsonwebtoken")
 
 
 const app = express()
 //express.json() converts json to Javascript object. VERY IMPORTANT
 app.use(express.json())
+
+//program can't read cookies, you need cookie-parser to read cookies. Using it as a middleware so all the routes can get the parser
+app.use(cookieParser())
 
 app.post("/signup" , async (req,res) => {
     const {firstName, lastName,emailId, password,} = req.body
@@ -43,12 +48,40 @@ app.post("/login", async (req,res) => {
             if(!isPasswordCorrect){
                 throw new Error("Invalid Credentials!")
             }else{
-                res.send("Login Successful")
+                const _id = user._id
+                //jwt.sign takes a payload (here _id that will be returned when verified) and a Secret key that is required to verify
+                const token = jwt.sign({_id : _id }, "SECRET#636@")
+                res.cookie("token", token)
+                res.send(user)
             }
         }
 
     }catch(err){
-        res.status(400).send( err.message)
+        res.status(400).send( "ERROR : " + err.message)
+    }
+})
+
+app.get("/profile", async (req,res) => {
+    try{
+        const cookies = req.cookies;
+        const {token} = cookies
+        // console.log(token)
+        if(!token){
+            throw new Error("Invalid token")
+        }
+        const decodedMessage = jwt.verify(token, "SECRET#636@" )
+        
+        // console.log(decodedMessage)
+        const user = await User.findOne({_id : decodedMessage?._id})
+
+        if(!user){
+            throw new Error("User does not exist, please login")
+        }else {
+            res.send(user)
+        }
+        
+    }catch(err){
+        res.status(400).send( "ERROR : " + err.message)
     }
 })
 

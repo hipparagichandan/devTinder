@@ -43,21 +43,20 @@ app.post("/login", async (req,res) => {
         const user = await User.findOne({emailId : emailId})
         if(!user){
             throw new Error("Invalid Credentials!")
-        }else{
-            const isPasswordCorrect = await bcrypt.compare(password, user.password)
-            if(!isPasswordCorrect){
-                throw new Error("Invalid Credentials!")
-            }else{
-                const _id = user._id
-                //jwt.sign takes a payload (here _id that will be returned when verified) and a Secret key that is required to verify
-                const token = jwt.sign({_id : _id }, "SECRET#636@",{expiresIn : '7d'})
-                res.cookie("token", token, {
-                    maxAge: 7 * 24 * 60 * 60 * 1000,
-                    // expires : new Date(Date.now() + 3600000)
-                })
-                res.send(user)
-            }
         }
+        const isPasswordCorrect = await user.verifyPassword(password)
+        if(!isPasswordCorrect){
+            throw new Error("Invalid Credentials!")
+        }
+        const token = user.getJWT()
+
+        res.cookie("token", token, {
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            // expires : new Date(Date.now() + 3600000)
+        })
+        res.send(user)
+            
+        
 
     }catch(err){
         res.status(400).send( "ERROR : " + err.message)

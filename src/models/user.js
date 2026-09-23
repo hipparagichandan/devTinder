@@ -1,9 +1,12 @@
 const mongoose = require("mongoose")
 const validator = require("validator")
+const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken")
 
 const {Schema} = require("mongoose")
 
-const userSchema = Schema({
+const userSchema = Schema(
+    {
     firstName : {
         type : String,
         required : true,
@@ -65,9 +68,26 @@ const userSchema = Schema({
             }
         }
     }
-},{
+},
+{
     timestamps : true
 })
+
+userSchema.methods.verifyPassword = async function(passwordInputByUser){
+    const user =this;
+
+    const isPasswordCorrect = await bcrypt.compare(passwordInputByUser, user.password)
+
+    return isPasswordCorrect;
+}
+
+userSchema.methods.getJWT =  function(){
+    const user = this;
+
+    //jwt.sign takes a payload (here _id that will be returned when verified) and a Secret key that is required to verify
+    const token = jwt.sign({_id : user._id }, "SECRET#636@",{expiresIn : '7d'})
+    return token;
+}
 
 const User = mongoose.model("User", userSchema)
 

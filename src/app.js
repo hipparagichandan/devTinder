@@ -5,13 +5,13 @@ const {validateSignUpData} = require("./utils/validation")
 const bcrypt = require("bcrypt")
 const cookieParser = require("cookie-parser")
 const jwt = require("jsonwebtoken")
+const {userAuth} = require("./middlewares/auth")
 
 
 const app = express()
 //express.json() converts json to Javascript object. VERY IMPORTANT
-app.use(express.json())
-
 //program can't read cookies, you need cookie-parser to read cookies. Using it as a middleware so all the routes can get the parser
+app.use(express.json())
 app.use(cookieParser())
 
 app.post("/signup" , async (req,res) => {
@@ -50,8 +50,11 @@ app.post("/login", async (req,res) => {
             }else{
                 const _id = user._id
                 //jwt.sign takes a payload (here _id that will be returned when verified) and a Secret key that is required to verify
-                const token = jwt.sign({_id : _id }, "SECRET#636@")
-                res.cookie("token", token)
+                const token = jwt.sign({_id : _id }, "SECRET#636@",{expiresIn : '7d'})
+                res.cookie("token", token, {
+                    maxAge: 7 * 24 * 60 * 60 * 1000,
+                    // expires : new Date(Date.now() + 3600000)
+                })
                 res.send(user)
             }
         }
@@ -61,126 +64,19 @@ app.post("/login", async (req,res) => {
     }
 })
 
-app.get("/profile", async (req,res) => {
+app.get("/profile", userAuth, async (req,res) => {
     try{
-        const cookies = req.cookies;
-        const {token} = cookies
-        // console.log(token)
-        if(!token){
-            throw new Error("Invalid token")
-        }
-        const decodedMessage = jwt.verify(token, "SECRET#636@" )
-        
-        // console.log(decodedMessage)
-        const user = await User.findOne({_id : decodedMessage?._id})
-
-        if(!user){
-            throw new Error("User does not exist, please login")
-        }else {
-            res.send(user)
-        }
-        
+        const {user} = req
+        res.send(user)
     }catch(err){
         res.status(400).send( "ERROR : " + err.message)
     }
 })
 
-//get user by id
-app.get("/userById" , async (req,res) => {
-    const userId = req.body._id
-    try{
-        console.log("Fetching data for ID : " + userId)
-        const user = await User.findById(userId)
-        if(!user){
-            res.status(404).send("User not found") 
-        }else{
-            res.send(user)
-        }
-
-    }catch(err){
-        res.status(400).send("Something went wrong")
-    }
+app.post("/sendConnectionRequest", userAuth, (req,res) => {
+    const {user} = req;
+    res.send("Connection Request Sent by " + user.firstName)
 })
-
-//get user with emailId
-app.get("/user" , async (req,res) => {
-    const userEmailId = req.body.emailId
-    try{
-        console.log("Fetching data for emailId : " + userEmailId)
-        const user = await User.findOne({emailId : userEmailId })
-        if(!user){
-            res.status(404).send("User not found") 
-        }else{
-            res.send(user)
-        }
-
-    }catch(err){
-        res.status(400).send("Something went wrong")
-    }
- })
-
- // Get all users data for the feed
- app.get("/feed" , async (req,res) => {
-    try{
-        const users = await User.find({})
-        if(users.length === 0){
-            res.status(404).send("No users to display")
-        } else {
-            res.send(users)
-        }
-    }
-    catch(err) {
-        res.status(400).send("Something went wrong")
-
-    }
- })
-
- app.delete("/userByEmailId", async (req,res) => {
-    try{
-        const result = await User.deleteOne({emailId : req.body.emailId})
-        if(result.deletedCount === 1){
-            res.send("Deleted Succssfully")
-        } else {
-            res.status(404).send("User Not found")
-        }
-    }catch(err) {
-        res.status(400).send("Something went wrong")
-    }
- })
-
- app.delete("/user" , async (req,res) => {
-    try{
-        const userID = req.body._id
-        const user = await User.findByIdAndDelete(userID)
-        if(!user){
-             res.status(404).send("User Not found")
-        }else {
-            res.send("Deleted Successfully " + JSON.stringify(user))
-        }
-    }catch(err) {
-        res.status(400).send("Something went wrong")
-    }
- } )
-
- app.patch("/user/:userID", async (req, res) => {
-    const userID = req.params?.userID;
-    const data = req.body;
-
-    try{
-        const ALLOWED_UPDATES = ["password", "skills", "gender", "imageUrl","about"]
-        const isUpdateAllowed = Object.keys(req.body).every((k) => ALLOWED_UPDATES.includes(k))
-        if(!isUpdateAllowed) throw new Error("Update Not Allowed");
-        if(data?.skills?.length > 10) throw new Error("You can have maximum of 10 skills")
-        const user = await User.findByIdAndUpdate(userID, req.body, {runValidators : true})
-        if(!user){
-             res.status(404).send("User Not found")
-        }else {
-            res.send("Updated Successfully " + JSON.stringify(user))
-        }
-    }catch(err) {
-        res.status(400).send("Update Failed : Error : " + err.message)
-    }
- })
 
 connectDB().then( () => {
     console.log("Database Connection succesful")

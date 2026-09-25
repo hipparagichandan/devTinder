@@ -1,4 +1,5 @@
 const validator = require('validator')
+
 function validateSignUpData(req){
 
     const {firstName , lastName, emailId, skills, age, password} = req.body
@@ -15,5 +16,28 @@ function validateSignUpData(req){
     
 }
 
+function validateUpdateData (req){
+    const allowedUpdateFields = ["firstName", "lastName", "skills", "about", "imageUrl", "age"]
+    const isUpdateAllowed = Object.keys(req.body).every( field => allowedUpdateFields.includes(field))
+    return isUpdateAllowed;
+ }
 
-module.exports = {validateSignUpData}
+ function validatePasswordUpdate(req){
+    console.log(req.body)
+    const bodyData = Object.keys(req.body)
+    
+    if(bodyData.length !== 1) {
+        throw new Error("Invalid Data Sent")
+    };
+    if (Object.keys(req.body)[0] !== "password"){
+        throw new Error("Invalid Data Sent")
+    }
+    if(!validator.isStrongPassword(req.body.password)){
+        throw new Error("Enter a strong password")
+    }
+    
+    
+ }
+
+
+module.exports = {validateSignUpData, validateUpdateData, validatePasswordUpdate}

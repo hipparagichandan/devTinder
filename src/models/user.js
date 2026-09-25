@@ -14,7 +14,7 @@ const userSchema = Schema(
         maxlength : 50,
         trim :true
     },
-    secondName : {
+    lastName : {
         type : String,
         maxlength : 50
     },

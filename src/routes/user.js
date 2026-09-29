@@ -4,7 +4,7 @@ const ConnectionRequest = require("../models/connectionRequest")
 const User = require("../models/user")
 
 const userRouter = express.Router()
-const USER_SAFE_DATA = "firstName lastName age skills imageUrl"
+const USER_SAFE_DATA = "firstName lastName age skills imageUrl about gender"
 
 userRouter.get("/user/requests/received", userAuth, async (req,res) => {
     try{
@@ -12,7 +12,7 @@ userRouter.get("/user/requests/received", userAuth, async (req,res) => {
         const data = await ConnectionRequest.find({
             toUserId : loggedInUser._id,
             status : "interested"
-        }).populate("fromUserId" , "firstName lastName age skills imageUrl")
+        }).populate("fromUserId" , "firstName lastName age skills imageUrl gender about")
         // }).populate("fromUserId" , ["firstName", "lastName","age", "skills", "imageUrl"]) //--This can be written without array in a space separated string
 
         res.json({

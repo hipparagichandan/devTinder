@@ -71,7 +71,7 @@ requestRouter.post("/request/review/:status/:requestId", userAuth, async(req,res
 
         res.json({
             message : `${loggedInUser.firstName} ${status} the request`,
-            request
+            request : data
         })
 
     }catch(err){

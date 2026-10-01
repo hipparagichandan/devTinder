@@ -5,7 +5,7 @@ dns.setServers(['1.1.1.1', '8.8.8.8']);
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
-   await mongoose.connect("mongodb+srv://chandansh18_db_user:uOkAa8rvr88NlwQJ@namastenodechandan.qrpcvgm.mongodb.net/devTinder")
+   await mongoose.connect(process.env.DB_CONNECTION_SECRET)
 }
 
 module.exports = connectDB;

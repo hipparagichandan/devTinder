@@ -85,7 +85,7 @@ userSchema.methods.getJWT =  function(){
     const user = this;
 
     //jwt.sign takes a payload (here _id that will be returned when verified) and a Secret key that is required to verify
-    const token = jwt.sign({_id : user._id }, "SECRET#636@",{expiresIn : '7d'})
+    const token = jwt.sign({_id : user._id }, process.env.JWT_SECRET ,{expiresIn : '7d'})
     return token;
 }
 
